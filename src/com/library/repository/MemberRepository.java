@@ -1,5 +1,6 @@
 package com.library.repository;
 
+import com.library.exception.MemberNotFoundException;
 import com.library.model.Member;
 import com.library.exception.BookNotFoundException;
 
@@ -20,5 +21,41 @@ public class MemberRepository {
     public void addMember(Member member)
     {
         members.put(member.getId() , member);
+    }
+    public Member getMemberById(String  id) throws MemberNotFoundException
+    {
+        Member member=members.get(id);
+        if(member ==null)
+        {
+            throw new MemberNotFoundException(" Member with ID"+ id+"not found ");
+
+        }
+        return member;
+    }
+    public List<Member> getAllMembers()
+    {
+        return new ArrayList<>(members.values());
+    }
+    public List<Member> searchMembersByName(String name) {
+        List<Member> matchingMembers = new ArrayList<>();
+        for (Member member : members.values()) {
+            if (member.getName().toLowerCase().contains(name.toLowerCase())) {
+                matchingMembers.add(member);
+            }
+        }
+        return matchingMembers;
+    }
+    public void updateMember(Member member) throws MemberNotFoundException {
+        if (!members.containsKey(member.getId())) {
+            throw new MemberNotFoundException("Member with ID " + member.getId() + " not found");
+        }
+        members.put(member.getId(), member);
+    }
+
+    public void removeMember(String id) throws MemberNotFoundException {
+        if (!members.containsKey(id)) {
+            throw new MemberNotFoundException("Member with ID " + id + " not found");
+        }
+        members.remove(id);
     }
 }

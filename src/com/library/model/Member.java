@@ -26,10 +26,6 @@ public class Member
         return id;
     }
 
-    public void setId(String id) {
-        this.id = id;
-    }
-
     public String getName() {
         return name;
     }
@@ -49,18 +45,17 @@ public class Member
     public List<Book> getBorrowedBooks() {
         return borrowedBooks;
     }
-
-    public void setBorrowedBooks(List<Book> borrowedBooks) {
-        this.borrowedBooks = borrowedBooks;
+    public void borrowBook(Book book) {
+        borrowedBooks.add(book);
     }
-
     public LocalDate getJoindate() {
         return joindate;
     }
-
-    public void setJoindate(LocalDate joindate) {
-        this.joindate = joindate;
+    public void returnBook(Book book) {
+        borrowedBooks.remove(book);
     }
+
+
     public String toString()
     {
         return " ID:"+id + ", Name"+name+",Contact"+contactInfo

@@ -17,9 +17,6 @@ public  abstract class  LibraryItem
     }
 
     //getters and setters
-    public void setId(String id) {
-        this.id = id;
-    }
 
     public String getId() {
         return id;
@@ -32,6 +29,7 @@ public  abstract class  LibraryItem
     public boolean isAvailable() {
         return isAvailable;
     }
+
 
     public String getTitle() {
         return title;
