@@ -41,7 +41,7 @@ A simple **Library Management System** built using **Java** and **Object-Oriente
 
 1. Clone this repo:
    ```bash
-   git clone https://github.com/maheen-736/library-management-system.git
+   https://github.com/maheen-736/library-managment-system.git
 cd library-management-system
 javac src/*.java
 java src.Main
