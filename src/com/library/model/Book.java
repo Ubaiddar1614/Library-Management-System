@@ -1,7 +1,10 @@
 package com.library.model;
+import java.io.Serializable;
 import java.time.LocalDate;
-public class Book  extends LibraryItem
+public class Book extends LibraryItem implements Serializable
+
 {
+    private static final long serialVersionUID = 1L;
     private String author;
     private String isbn;
     private String genre;

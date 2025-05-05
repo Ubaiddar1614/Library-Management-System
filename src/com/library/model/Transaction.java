@@ -1,7 +1,10 @@
 package com.library.model;
 import java.time.LocalDate;
+import java.io.Serializable;
 
-public class Transaction {
+
+public class Transaction implements Serializable {
+    private static final long serialVersionUID = 1L;
     private String id;
     private Book book;
     private Member member;

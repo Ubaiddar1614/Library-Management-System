@@ -2,23 +2,35 @@ package com.library.repository;
 import com.library.model.Book;
 import com.library.model.Member;
 import com.library.model.Transaction;
+import com.library.util.FileHandler;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class TransactionRepository
-{
+public class TransactionRepository {
     private Map<String, Transaction> transactions;
 
     public TransactionRepository() {
         this.transactions = new HashMap<>();
+        loadTransactionsFromFile();
+    }
+
+    private void loadTransactionsFromFile() {
+        List<Transaction> loadedTransactions = FileHandler.loadTransactions();
+        for (Transaction transaction : loadedTransactions) {
+            transactions.put(transaction.getId(), transaction);
+        }
+    }
+
+    public void saveToFile() {
+        FileHandler.saveTransactions(getAllTransactions());
     }
 
     public void addTransaction(Transaction transaction) {
         transactions.put(transaction.getId(), transaction);
+        saveToFile();
     }
 
     public Transaction getTransactionById(String id) {

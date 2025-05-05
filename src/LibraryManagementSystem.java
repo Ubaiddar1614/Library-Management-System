@@ -1,4 +1,3 @@
-
 import com.library.exception.BookAlreadyBorrowedException;
 import com.library.exception.BookNotFoundException;
 import com.library.exception.InvalidBookDataException;
@@ -13,7 +12,9 @@ import com.library.service.BookService;
 import com.library.service.MemberService;
 import com.library.service.TransactionsService;
 import com.library.util.DateUtil;
+import com.library.util.FileHandler;
 
+import java.io.File;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.List;
@@ -24,12 +25,15 @@ public class LibraryManagementSystem {
     private MemberService memberService;
     private TransactionsService transactionService;
     private Scanner scanner;
+    private BookRepository bookRepository;
+    private MemberRepository memberRepository;
+    private TransactionRepository transactionRepository;
 
     public LibraryManagementSystem() {
         // Initialize repositories
-        BookRepository bookRepository = new BookRepository();
-        MemberRepository memberRepository = new MemberRepository();
-        TransactionRepository transactionRepository = new TransactionRepository();
+        bookRepository = new BookRepository();
+        memberRepository = new MemberRepository();
+        transactionRepository = new TransactionRepository();
 
         // Initialize services
         bookService = new BookService(bookRepository);
@@ -47,7 +51,15 @@ public class LibraryManagementSystem {
         System.out.println("     LIBRARY MANAGEMENT SYSTEM     ");
         System.out.println("===================================");
 
-        loadSampleData();
+        // Check if we need to load sample data (only if no data exists)
+        if (bookService.getAllBooks().isEmpty() && memberService.getAllMembers().isEmpty()) {
+            boolean loadSamples = getYesNoInput("No existing data found. Would you like to load sample data? (y/n): ");
+            if (loadSamples) {
+                loadSampleData();
+            }
+        } else {
+            System.out.println("Loaded existing data from files.");
+        }
 
         while (running) {
             displayMainMenu();
@@ -64,6 +76,10 @@ public class LibraryManagementSystem {
                     handleTransactionManagement();
                     break;
                 case 4:
+                    handleDataManagement();
+                    break;
+                case 5:
+                    saveAllData();
                     running = false;
                     System.out.println("Thank you for using the Library Management System. Goodbye!");
                     break;
@@ -79,7 +95,8 @@ public class LibraryManagementSystem {
         System.out.println("1. Book Management");
         System.out.println("2. Member Management");
         System.out.println("3. Transaction Management");
-        System.out.println("4. Exit");
+        System.out.println("4. Data Management");
+        System.out.println("5. Save & Exit");
     }
 
     private void handleBookManagement() {
@@ -92,7 +109,9 @@ public class LibraryManagementSystem {
             System.out.println("3. Search books by title");
             System.out.println("4. Search books by author");
             System.out.println("5. View book details");
-            System.out.println("6. Return to main menu");
+            System.out.println("6. Update book information");
+            System.out.println("7. Remove a book");
+            System.out.println("8. Return to main menu");
 
             int choice = getIntInput("Enter your choice: ");
 
@@ -113,6 +132,12 @@ public class LibraryManagementSystem {
                     viewBookDetails();
                     break;
                 case 6:
+                    updateBook();
+                    break;
+                case 7:
+                    removeBook();
+                    break;
+                case 8:
                     running = false;
                     break;
                 default:
@@ -131,7 +156,9 @@ public class LibraryManagementSystem {
             System.out.println("2. View all members");
             System.out.println("3. Search members by name");
             System.out.println("4. View member details");
-            System.out.println("5. Return to main menu");
+            System.out.println("5. Update member information");
+            System.out.println("6. Remove a member");
+            System.out.println("7. Return to main menu");
 
             int choice = getIntInput("Enter your choice: ");
 
@@ -149,6 +176,12 @@ public class LibraryManagementSystem {
                     viewMemberDetails();
                     break;
                 case 5:
+                    updateMember();
+                    break;
+                case 6:
+                    removeMember();
+                    break;
+                case 7:
                     running = false;
                     break;
                 default:
@@ -198,6 +231,108 @@ public class LibraryManagementSystem {
         }
     }
 
+    private void handleDataManagement() {
+        boolean running = true;
+
+        while (running) {
+            System.out.println("\nDATA MANAGEMENT");
+            System.out.println("1. Save all data");
+            System.out.println("2. Backup data");
+            System.out.println("3. Restore from backup");
+            System.out.println("4. Return to main menu");
+
+            int choice = getIntInput("Enter your choice: ");
+
+            switch (choice) {
+                case 1:
+                    saveAllData();
+                    break;
+                case 2:
+                    backupData();
+                    break;
+                case 3:
+                    restoreFromBackup();
+                    break;
+                case 4:
+                    running = false;
+                    break;
+                default:
+                    System.out.println("Invalid choice. Please try again.");
+                    break;
+            }
+        }
+    }
+
+    private void saveAllData() {
+        bookRepository.saveToFile();
+        memberRepository.saveToFile();
+        transactionRepository.saveToFile();
+        System.out.println("All data saved successfully.");
+    }
+
+    private void backupData() {
+        try {
+            String backupDir = "library_backup_" + DateUtil.formatDate(LocalDate.now()).replace("-", "");
+            File directory = new File(backupDir);
+            if (!directory.exists()) {
+                directory.mkdirs();
+            }
+
+            // Copy files from library_data to backup directory
+            File dataDir = new File("library_data");
+            if (dataDir.exists() && dataDir.isDirectory()) {
+                File[] files = dataDir.listFiles();
+                if (files != null) {
+                    for (File file : files) {
+                        java.nio.file.Files.copy(
+                                file.toPath(),
+                                new File(backupDir + "/" + file.getName()).toPath(),
+                                java.nio.file.StandardCopyOption.REPLACE_EXISTING
+                        );
+                    }
+                    System.out.println("Backup created successfully in directory: " + backupDir);
+                }
+            } else {
+                System.out.println("No data to backup.");
+            }
+        } catch (Exception e) {
+            System.err.println("Error creating backup: " + e.getMessage());
+        }
+    }
+
+    private void restoreFromBackup() {
+        scanner.nextLine(); // Clear buffer
+        System.out.print("Enter backup directory name (e.g., library_backup_20250505): ");
+        String backupDir = scanner.nextLine();
+
+        File directory = new File(backupDir);
+        if (!directory.exists() || !directory.isDirectory()) {
+            System.out.println("Backup directory not found.");
+            return;
+        }
+
+        try {
+            // Ensure data directory exists
+            FileHandler.ensureDataDirectoryExists();
+
+            // Copy files from backup directory to library_data
+            File[] files = directory.listFiles();
+            if (files != null) {
+                for (File file : files) {
+                    java.nio.file.Files.copy(
+                            file.toPath(),
+                            new File("library_data/" + file.getName()).toPath(),
+                            java.nio.file.StandardCopyOption.REPLACE_EXISTING
+                    );
+                }
+                System.out.println("Data restored successfully from: " + backupDir);
+                System.out.println("Please restart the application to load the restored data.");
+            }
+        } catch (Exception e) {
+            System.err.println("Error restoring from backup: " + e.getMessage());
+        }
+    }
+
     // Book management methods
     private void addBook() {
         System.out.println("\nADD NEW BOOK");
@@ -230,6 +365,64 @@ public class LibraryManagementSystem {
             Book book = bookService.addBook(title, author, isbn, genre, publishDate);
             System.out.println("Book added successfully! Book ID: " + book.getId());
         } catch (InvalidBookDataException e) {
+            System.out.println("Error: " + e.getMessage());
+        }
+    }
+
+    private void updateBook() {
+        System.out.println("\nUPDATE BOOK INFORMATION");
+        scanner.nextLine(); // Clear buffer
+
+        System.out.print("Enter book ID to update: ");
+        String bookId = scanner.nextLine();
+
+        try {
+            Book book = bookService.getBookById(bookId);
+            System.out.println("Current book information:");
+            System.out.println(book);
+
+            System.out.print("Enter new title (leave blank to keep current): ");
+            String title = scanner.nextLine();
+            if (!title.isEmpty()) {
+                book.setTitle(title);
+            }
+
+            System.out.print("Enter new author (leave blank to keep current): ");
+            String author = scanner.nextLine();
+            if (!author.isEmpty()) {
+                book.setAuthor(author);
+            }
+
+            System.out.print("Enter new ISBN (leave blank to keep current): ");
+            String isbn = scanner.nextLine();
+            if (!isbn.isEmpty()) {
+                book.setIsbn(isbn);
+            }
+
+            System.out.print("Enter new genre (leave blank to keep current): ");
+            String genre = scanner.nextLine();
+            if (!genre.isEmpty()) {
+                book.setGenre(genre);
+            }
+
+            bookService.updateBook(book);
+            System.out.println("Book information updated successfully!");
+        } catch (BookNotFoundException e) {
+            System.out.println("Error: " + e.getMessage());
+        }
+    }
+
+    private void removeBook() {
+        System.out.println("\nREMOVE BOOK");
+        scanner.nextLine(); // Clear buffer
+
+        System.out.print("Enter book ID to remove: ");
+        String bookId = scanner.nextLine();
+
+        try {
+            bookService.removeBook(bookId);
+            System.out.println("Book removed successfully!");
+        } catch (BookNotFoundException e) {
             System.out.println("Error: " + e.getMessage());
         }
     }
@@ -327,6 +520,52 @@ public class LibraryManagementSystem {
 
         Member member = memberService.registerMember(name, contactInfo);
         System.out.println("Member registered successfully! Member ID: " + member.getId());
+    }
+
+    private void updateMember() {
+        System.out.println("\nUPDATE MEMBER INFORMATION");
+        scanner.nextLine(); // Clear buffer
+
+        System.out.print("Enter member ID to update: ");
+        String memberId = scanner.nextLine();
+
+        try {
+            Member member = memberService.getMemberById(memberId);
+            System.out.println("Current member information:");
+            System.out.println(member);
+
+            System.out.print("Enter new name (leave blank to keep current): ");
+            String name = scanner.nextLine();
+            if (!name.isEmpty()) {
+                member.setName(name);
+            }
+
+            System.out.print("Enter new contact information (leave blank to keep current): ");
+            String contactInfo = scanner.nextLine();
+            if (!contactInfo.isEmpty()) {
+                member.setContactInfo(contactInfo);
+            }
+
+            memberService.updateMember(member);
+            System.out.println("Member information updated successfully!");
+        } catch (MemberNotFoundException e) {
+            System.out.println("Error: " + e.getMessage());
+        }
+    }
+
+    private void removeMember() {
+        System.out.println("\nREMOVE MEMBER");
+        scanner.nextLine(); // Clear buffer
+
+        System.out.print("Enter member ID to remove: ");
+        String memberId = scanner.nextLine();
+
+        try {
+            memberService.removeMember(memberId);
+            System.out.println("Member removed successfully!");
+        } catch (MemberNotFoundException e) {
+            System.out.println("Error: " + e.getMessage());
+        }
     }
 
     private void viewAllMembers() {
@@ -527,6 +766,19 @@ public class LibraryManagementSystem {
         }
 
         return value;
+    }
+
+    private boolean getYesNoInput(String prompt) {
+        while (true) {
+            System.out.print(prompt);
+            String input = scanner.next().toLowerCase();
+            if (input.equals("y") || input.equals("yes")) {
+                return true;
+            } else if (input.equals("n") || input.equals("no")) {
+                return false;
+            }
+            System.out.println("Please enter 'y' or 'n'.");
+        }
     }
 
     private String truncateString(String str, int maxLength) {

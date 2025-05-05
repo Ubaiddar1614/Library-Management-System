@@ -8,16 +8,16 @@ import com.library.util.IdGenerator;
 
 import java.time.LocalDate;
 import java.util.List;
-public class BookService
-{
+
+public class BookService {
     private BookRepository bookRepository;
     private IdGenerator idGenerator;
 
-    public BookService(BookRepository bookRepository)
-    {
-        this.bookRepository=bookRepository;
-        this.idGenerator= new IdGenerator("B");
+    public BookService(BookRepository bookRepository) {
+        this.bookRepository = bookRepository;
+        this.idGenerator = new IdGenerator("B");
     }
+
     public Book addBook(String title, String author, String isbn, String genre, LocalDate publishDate)
             throws InvalidBookDataException {
         // Validate input
@@ -34,11 +34,13 @@ public class BookService
         }
 
         String id = idGenerator.generateId();
-        Book book = new Book(id, title, author, isbn, genre, publishDate);
+        // Create book with parameters in the correct order
+        Book book = new Book(author, isbn, genre, id, title, publishDate);
         bookRepository.addBook(book);
         return book;
     }
 
+    // Rest of the class remains the same
     public Book getBookById(String id) throws BookNotFoundException {
         return bookRepository.getBookById(id);
     }
@@ -90,4 +92,3 @@ public class BookService
         }
     }
 }
-

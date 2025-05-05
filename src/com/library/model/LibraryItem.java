@@ -1,7 +1,10 @@
 package com.library.model;
- import java.time.LocalDate;
-public  abstract class  LibraryItem
+import java.time.LocalDate;
+import java.io.Serializable;
+public abstract class LibraryItem implements Serializable
+
 {
+    private static final long serialVersionUID = 1L;
     private String id;
     private String title;
     private LocalDate publishDate;

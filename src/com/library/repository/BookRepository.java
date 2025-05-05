@@ -2,6 +2,7 @@ package com.library.repository;
 
 import com.library.model.Book;
 import com.library.exception.BookNotFoundException;
+import com.library.util.FileHandler;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -13,10 +14,23 @@ public class BookRepository {
 
     public BookRepository() {
         this.books = new HashMap<>();
+        loadBooksFromFile();
+    }
+
+    private void loadBooksFromFile() {
+        List<Book> loadedBooks = FileHandler.loadBooks();
+        for (Book book : loadedBooks) {
+            books.put(book.getId(), book);
+        }
+    }
+
+    public void saveToFile() {
+        FileHandler.saveBooks(getAllBooks());
     }
 
     public void addBook(Book book) {
         books.put(book.getId(), book);
+        saveToFile();
     }
 
     public Book getBookById(String id) throws BookNotFoundException {
@@ -66,6 +80,7 @@ public class BookRepository {
             throw new BookNotFoundException("Book with ID " + book.getId() + " not found");
         }
         books.put(book.getId(), book);
+        saveToFile();
     }
 
     public void removeBook(String id) throws BookNotFoundException {
@@ -73,5 +88,6 @@ public class BookRepository {
             throw new BookNotFoundException("Book with ID " + id + " not found");
         }
         books.remove(id);
+        saveToFile();
     }
 }
