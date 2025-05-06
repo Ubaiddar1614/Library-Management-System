@@ -47,7 +47,7 @@ Here’s a quick overview of the project structure:
 │ │ ├── 📁 repository/           # Data access and CRUD operations
 │ │ ├── 📁 service/              # Core business logic and operations
 │ │ ├── 📁 exception/            # Custom exception handling
-│ │ └── 📁 util/                 # Utility classes (DateUtil, IdGenerator)
+│ │ └── 📁 util/                 # Utility classes (DateUtil, IdGenerator , File handling)
 ├── 📄 README.md                 # Documentation
 └── 📄 .gitignore                # Ignore unwanted files in git
 ````
@@ -84,6 +84,7 @@ Here’s a quick overview of the project structure:
 
    * `IdGenerator`: Generates unique IDs for books, members, and transactions
    * `DateUtil`: Helps with date operations like calculating due dates
+   * `file handling`: Helps to store the data if transactions,members , and book inventory.
 
 ---
 
