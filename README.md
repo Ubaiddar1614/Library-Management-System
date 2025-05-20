@@ -124,8 +124,9 @@ Here are some **future enhancements** to make this project even better:
 
 Feel free to reach out with any questions or suggestions:
 
-* **Maheen**
-  📧 \[[maheen.khadim736@gmail.com](mailto:maheen.khadim736@gmail.com)]
+
+  📧 \[[maheen.khadim736@gmail.com](mailto:maheen.khadim736@gmail.com)] 
+  📧 \[[ubaiddar1614@gmail.com](mailto:ubaiddar1614@gmail.com)] 
 
 ---
 
